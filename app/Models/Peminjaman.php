@@ -24,6 +24,8 @@ class Peminjaman extends Model
         'status',
         'alasan_penolakan',
         'catatan_pengembalian',
+        'bukti_peminjaman',
+        'bukti_pengembalian',
     ];
 
     protected $casts = [
@@ -86,5 +88,15 @@ class Peminjaman extends Model
         }
         
         return $prefix . '-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+    }
+
+    public function getBuktiPeminjamanUrlAttribute(): ?string
+    {
+        return $this->bukti_peminjaman ? asset('storage/' . $this->bukti_peminjaman) : null;
+    }
+
+    public function getBuktiPengembalianUrlAttribute(): ?string
+    {
+        return $this->bukti_pengembalian ? asset('storage/' . $this->bukti_pengembalian) : null;
     }
 }

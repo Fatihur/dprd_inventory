@@ -1,0 +1,362 @@
+/' 
+===========================================
+ACTIVITY DIAGRAM - CLASSIC STYLE
+Sistem Informasi Peminjaman Inventaris Barang DPRD
+Style: Tanpa swimlane, alur sederhana
+===========================================
+'/
+
+!theme bluegray
+
+@startuml Activity_Login_Logout
+
+partition "User" {
+  start
+  
+  :Masuk ke halaman login;
+  
+  :Masukkan email dan password;
+  
+  :Validasi kredensial;
+  
+  if (Kredensial valid?) then (yes)
+    :Akses berhasil;
+    :Simpan log aktivitas;
+    :Redirect ke dashboard;
+    :Pilih menu logout;
+    :Logout dari sistem;
+    :Hapus session;
+    :Kembali ke halaman login;
+  else (no)
+    :Tampilkan pesan kesalahan;
+    :Ulangi memasukkan kredensial;
+  endif
+  
+  stop
+}
+
+@enduml
+
+@startuml Activity_Manajemen_User
+
+partition "Admin" {
+  start
+  
+  :Login ke sistem;
+  
+  :Akses menu Manajemen User;
+  
+  :Pilih aksi (tambah/ubah/hapus);
+  
+  if (Aksi?) then (Tambah)
+    :Isi form user baru;
+    :Validasi data;
+    if (Data valid?) then (yes)
+      :Simpan user baru;
+      :Tampilkan konfirmasi;
+    else (no)
+      :Tampilkan error;
+    endif
+  elseif (Ubah) then
+    :Pilih user;
+    :Edit data user;
+    :Simpan perubahan;
+    :Tampilkan konfirmasi;
+  else (Hapus)
+    :Pilih user;
+    :Konfirmasi hapus;
+    :Hapus user;
+    :Tampilkan konfirmasi;
+  endif
+  
+  stop
+}
+
+@enduml
+
+@startuml Activity_Manajemen_Barang
+
+partition "Admin" {
+  start
+  
+  :Login ke sistem;
+  
+  :Akses menu Manajemen Barang;
+  
+  :Pilih aksi (tambah/ubah/hapus);
+  
+  if (Aksi?) then (Tambah)
+    :Isi form barang baru;
+    :Generate kode barang;
+    :Simpan data barang;
+    :Tampilkan konfirmasi;
+  elseif (Ubah) then
+    :Pilih barang;
+    :Edit data barang;
+    :Simpan perubahan;
+    :Tampilkan konfirmasi;
+  else (Hapus)
+    :Pilih barang;
+    if (Ada peminjaman aktif?) then (yes)
+      :Tampilkan error;
+      stop
+    else (no)
+      :Hapus barang;
+      :Tampilkan konfirmasi;
+    endif
+  endif
+  
+  stop
+}
+
+@enduml
+
+@startuml Activity_Pengajuan_Peminjaman
+
+partition "Operator" {
+  start
+  
+  :Login ke sistem;
+  
+  :Akses menu Peminjaman;
+  
+  :Klik tombol Buat Peminjaman;
+  
+  :Isi data peminjam;
+  
+  :Pilih barang yang akan dipinjam;
+  
+  :Submit form;
+  
+  :Validasi data;
+  
+  if (Data valid?) then (yes)
+    :Cek stok barang;
+    if (Stok mencukupi?) then (yes)
+      :Generate kode peminjaman;
+      :Simpan data peminjaman;
+      :Kirim notifikasi ke Kabag Umum;
+      :Tampilkan konfirmasi berhasil;
+    else (no)
+      :Tampilkan error stok tidak cukup;
+    endif
+  else (no)
+    :Tampilkan error validasi;
+  endif
+  
+  stop
+}
+
+@enduml
+
+@startuml Activity_Persetujuan_Peminjaman
+
+partition "Kabag Umum" {
+  start
+  
+  :Login ke sistem;
+  
+  :Akses menu Persetujuan;
+  
+  :Lihat daftar pengajuan pending;
+  
+  :Pilih pengajuan untuk direview;
+  
+  :Lihat detail pengajuan;
+  
+  if (Keputusan?) then (Setujui)
+    :Cek stok barang;
+    if (Stok tersedia?) then (yes)
+      :Update status = approved;
+      :Kirim notifikasi ke Operator;
+      :Tampilkan konfirmasi disetujui;
+    else (no)
+      :Tampilkan error stok;
+    endif
+  else (Tolak)
+    :Input alasan penolakan;
+    :Update status = rejected;
+    :Kirim notifikasi ke Operator;
+    :Tampilkan konfirmasi ditolak;
+  endif
+  
+  stop
+}
+
+@enduml
+
+@startuml Activity_Penyerahan_Barang
+
+partition "Operator" {
+  start
+  
+  :Login ke sistem;
+  
+  :Akses menu Peminjaman;
+  
+  :Lihat daftar peminjaman approved;
+  
+  :Pilih peminjaman untuk diserahkan;
+  
+  :Klik tombol Serahkan Barang;
+  
+  :Cek status peminjaman;
+  
+  if (Status = approved?) then (yes)
+    :Kurangi stok barang;
+    :Update status = dipinjam;
+    :Kirim notifikasi ke Admin & Kabag;
+    :Tampilkan konfirmasi berhasil;
+  else (no)
+    :Tampilkan error status;
+  endif
+  
+  stop
+}
+
+@enduml
+
+@startuml Activity_Pengembalian_Barang
+
+partition "Operator" {
+  start
+  
+  :Login ke sistem;
+  
+  :Akses menu Pengembalian;
+  
+  :Lihat daftar barang dipinjam;
+  
+  :Pilih peminjaman untuk dikembalikan;
+  
+  :Isi form pengembalian;
+  
+  :Input jumlah dan kondisi barang;
+  
+  :Submit form;
+  
+  :Validasi jumlah kembali;
+  
+  if (Jumlah valid?) then (yes)
+    :Update detail pengembalian;
+    :Tambah stok barang;
+    if (Kondisi rusak?) then (yes)
+      :Update kondisi barang;
+    endif
+    :Update status = selesai;
+    :Kirim notifikasi ke Admin & Kabag;
+    :Tampilkan konfirmasi berhasil;
+  else (no)
+    :Tampilkan error validasi;
+  endif
+  
+  stop
+}
+
+@enduml
+
+@startuml Activity_Generate_Laporan
+
+partition "Admin/Kabag" {
+  start
+  
+  :Login ke sistem;
+  
+  :Akses menu Laporan;
+  
+  :Pilih jenis laporan;
+  
+  if (Jenis laporan?) then (Peminjaman)
+    :Query data peminjaman;
+    :Filter berdasarkan periode;
+  elseif (Pengembalian) then
+    :Query data pengembalian;
+    :Filter berdasarkan periode;
+  else (Stok)
+    :Query data stok barang;
+    :Hitung stok tersedia;
+  endif
+  
+  :Tampilkan tabel laporan;
+  
+  if (Export PDF?) then (yes)
+    :Generate file PDF;
+    :Download file;
+    :File PDF terunduh;
+  endif
+  
+  stop
+}
+
+@enduml
+
+@startuml Activity_Alur_Lengkap
+
+partition "Sistem" {
+  start
+  
+  :Operator buat pengajuan peminjaman;
+  
+  :Status = PENDING;
+  
+  :Kirim notifikasi ke Kabag Umum;
+  
+  :Kabag Umum review pengajuan;
+  
+  if (Keputusan?) then (Setujui)
+    :Status = APPROVED;
+    :Kirim notifikasi ke Operator;
+    :Operator serahkan barang;
+    :Kurangi stok barang;
+    :Status = DIPINJAM;
+    :Kirim notifikasi ke Admin & Kabag;
+    
+    note right
+      Barang sedang dipinjam
+    end note
+    
+    :Peminjam gunakan barang;
+    :Operator terima pengembalian;
+    :Input kondisi barang;
+    :Tambah stok barang;
+    if (Kondisi rusak?) then (yes)
+      :Update kondisi barang;
+    endif
+    :Status = SELESAI;
+    :Kirim notifikasi ke Admin & Kabag;
+  else (Tolak)
+    :Status = REJECTED;
+    :Kirim notifikasi ke Operator;
+    :Operator lihat alasan penolakan;
+  endif
+  
+  stop
+}
+
+@enduml
+
+@startuml Activity_Notifikasi
+
+partition "Sistem" {
+  start
+  
+  :Polling notifikasi (AJAX);
+  
+  :Query notifikasi belum dibaca;
+  
+  :Kirim response JSON;
+  
+  :Tampilkan badge notifikasi;
+  
+  if (User klik notifikasi?) then (yes)
+    :Update status dibaca = true;
+    :Redirect ke halaman terkait;
+  elseif (Klik "Tandai Semua"?) then (yes)
+    :Update semua notifikasi user;
+    :Update UI;
+  endif
+  
+  stop
+}
+
+@enduml

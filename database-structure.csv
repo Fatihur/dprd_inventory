@@ -1,0 +1,58 @@
+Table,Field,Type,Length,Extra,Null
+users,id,BIGINT,20,PRIMARY KEY AUTO_INCREMENT,NO
+users,name,VARCHAR,255,,NO
+users,email,VARCHAR,255,UNIQUE,NO
+users,email_verified_at,TIMESTAMP,,NULLABLE,YES
+users,password,VARCHAR,255,,NO
+users,role,ENUM,"'admin','operator','kabag_umum'",DEFAULT 'operator',NO
+users,remember_token,VARCHAR,100,NULLABLE,YES
+
+barang,id,BIGINT,20,PRIMARY KEY AUTO_INCREMENT,NO
+barang,kode_barang,VARCHAR,255,UNIQUE,NO
+barang,nama_barang,VARCHAR,255,,NO
+barang,deskripsi,TEXT,,NULLABLE,YES
+barang,kategori,VARCHAR,255,NULLABLE,YES
+barang,satuan,VARCHAR,255,,NO
+barang,stok,INT,11,DEFAULT 0,NO
+barang,kondisi,ENUM,"'baik','rusak_ringan','rusak_berat'",DEFAULT 'baik',NO
+barang,lokasi,VARCHAR,255,NULLABLE,YES
+
+peminjaman,id,BIGINT,20,PRIMARY KEY AUTO_INCREMENT,NO
+peminjaman,kode_peminjaman,VARCHAR,255,UNIQUE,NO
+peminjaman,operator_id,BIGINT,20,FOREIGN KEY (users.id),NO
+peminjaman,kepala_bagian_id,BIGINT,20,FOREIGN KEY (users.id) NULLABLE,YES
+peminjaman,nama_peminjam,VARCHAR,255,,NO
+peminjaman,unit_kerja,VARCHAR,255,,NO
+peminjaman,keperluan,TEXT,,NULLABLE,YES
+peminjaman,tanggal_pinjam,DATE,,,NO
+peminjaman,tanggal_kembali_rencana,DATE,,,NO
+peminjaman,tanggal_kembali_aktual,DATE,,NULLABLE,YES
+peminjaman,status,ENUM,"'pending','approved','rejected','dipinjam','selesai'",DEFAULT 'pending',NO
+peminjaman,alasan_penolakan,TEXT,,NULLABLE,YES
+peminjaman,catatan_pengembalian,TEXT,,NULLABLE,YES
+peminjaman,bukti_peminjaman,VARCHAR,255,NULLABLE,YES
+peminjaman,bukti_pengembalian,VARCHAR,255,NULLABLE,YES
+
+detail_peminjaman,id,BIGINT,20,PRIMARY KEY AUTO_INCREMENT,NO
+detail_peminjaman,peminjaman_id,BIGINT,20,FOREIGN KEY (peminjaman.id),NO
+detail_peminjaman,barang_id,BIGINT,20,FOREIGN KEY (barang.id),NO
+detail_peminjaman,jumlah,INT,11,,NO
+detail_peminjaman,jumlah_kembali,INT,11,DEFAULT 0,NO
+detail_peminjaman,kondisi_kembali,ENUM,"'baik','rusak_ringan','rusak_berat'",NULLABLE,YES
+
+log_aktivitas,id,BIGINT,20,PRIMARY KEY AUTO_INCREMENT,NO
+log_aktivitas,user_id,BIGINT,20,FOREIGN KEY (users.id),NO
+log_aktivitas,aksi,VARCHAR,255,,NO
+log_aktivitas,tabel,VARCHAR,255,,NO
+log_aktivitas,record_id,BIGINT,20,NULLABLE,YES
+log_aktivitas,data_lama,TEXT,,NULLABLE,YES
+log_aktivitas,data_baru,TEXT,,NULLABLE,YES
+log_aktivitas,ip_address,VARCHAR,255,NULLABLE,YES
+
+notifikasi,id,BIGINT,20,PRIMARY KEY AUTO_INCREMENT,NO
+notifikasi,user_id,BIGINT,20,FOREIGN KEY (users.id),NO
+notifikasi,judul,VARCHAR,255,,NO
+notifikasi,pesan,TEXT,,NO
+notifikasi,tipe,VARCHAR,255,DEFAULT 'info',NO
+notifikasi,link,VARCHAR,255,NULLABLE,YES
+notifikasi,dibaca_pada,TIMESTAMP,,NULLABLE,YES

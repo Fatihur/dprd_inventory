@@ -68,4 +68,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/laporan/stok', [LaporanController::class, 'stok'])->name('laporan.stok');
         Route::get('/laporan/stok/pdf', [LaporanController::class, 'stokPdf'])->name('laporan.stok.pdf');
     });
+    
+    // Bukti/Resi routes (accessible by all authenticated users)
+    Route::get('/bukti/peminjaman/{peminjaman}', [App\Http\Controllers\BuktiController::class, 'cetakBuktiPeminjaman'])->name('bukti.peminjaman');
+    Route::get('/bukti/peminjaman/{peminjaman}/pdf', [App\Http\Controllers\BuktiController::class, 'cetakBuktiPeminjamanPdf'])->name('bukti.peminjaman.pdf');
+    Route::get('/bukti/pengembalian/{peminjaman}', [App\Http\Controllers\BuktiController::class, 'cetakBuktiPengembalian'])->name('bukti.pengembalian');
+    Route::get('/bukti/pengembalian/{peminjaman}/pdf', [App\Http\Controllers\BuktiController::class, 'cetakBuktiPengembalianPdf'])->name('bukti.pengembalian.pdf');
 });

@@ -72,7 +72,7 @@
             </div>
         </div>
 
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
             @if($peminjaman->status === 'approved')
             <form action="{{ route('peminjaman.serahkan', $peminjaman) }}" method="POST" onsubmit="return confirm('Serahkan barang kepada peminjam?')">
                 @csrf
@@ -81,6 +81,19 @@
                 </button>
             </form>
             @endif
+            
+            @if(in_array($peminjaman->status, ['approved', 'dipinjam', 'selesai']))
+            <a href="{{ route('bukti.peminjaman', $peminjaman) }}" class="btn btn-primary" target="_blank">
+                <i class="bi bi-printer me-1"></i>Cetak Bukti Peminjaman
+            </a>
+            @endif
+            
+            @if($peminjaman->status === 'selesai')
+            <a href="{{ route('bukti.pengembalian', $peminjaman) }}" class="btn btn-success" target="_blank">
+                <i class="bi bi-printer me-1"></i>Cetak Bukti Pengembalian
+            </a>
+            @endif
+            
             <a href="{{ route('peminjaman.index') }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left me-1"></i>Kembali
             </a>

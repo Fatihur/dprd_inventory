@@ -1,0 +1,300 @@
+@startuml Login
+title Alur Login
+
+actor User
+participant AuthController
+database DB
+
+User -> AuthController: Submit email & password
+activate AuthController
+AuthController -> DB: Validasi credentials
+activate DB
+
+alt Login Berhasil
+    DB --> AuthController: User valid
+    deactivate DB
+    AuthController -> DB: Simpan log
+    activate DB
+    DB --> AuthController: OK
+    deactivate DB
+    AuthController --> User: Redirect dashboard
+else Login Gagal
+    DB --> AuthController: Invalid
+    deactivate DB
+    AuthController --> User: Error message
+end
+
+deactivate AuthController
+
+@enduml
+
+@startuml Logout
+title Alur Logout
+
+actor User
+participant AuthController
+database DB
+
+User -> AuthController: Klik tombol Logout
+activate AuthController
+AuthController -> DB: Simpan log aktivitas
+activate DB
+DB --> AuthController: OK
+deactivate DB
+AuthController -> AuthController: Hapus session
+AuthController -> AuthController: Invalidate token
+AuthController --> User: Redirect ke login
+deactivate AuthController
+
+@enduml
+
+@startuml Pengajuan_Peminjaman
+title Alur Pengajuan Peminjaman (Operator)
+
+actor Operator
+participant PeminjamanController
+database DB
+
+Operator -> PeminjamanController: Submit form peminjaman
+activate PeminjamanController
+PeminjamanController -> DB: BEGIN TRANSACTION
+activate DB
+
+PeminjamanController -> DB: 1. Generate kode\n2. INSERT peminjaman\n3. Cek stok barang
+
+alt Stok cukup
+    DB --> PeminjamanController: Stok tersedia
+    PeminjamanController -> DB: INSERT detail & notifikasi
+    PeminjamanController -> DB: COMMIT
+    DB --> PeminjamanController: Success
+    PeminjamanController --> Operator: Peminjaman berhasil
+else Stok tidak cukup
+    DB --> PeminjamanController: Stok tidak cukup
+    PeminjamanController -> DB: ROLLBACK
+    PeminjamanController --> Operator: Error stok
+end
+
+deactivate DB
+deactivate PeminjamanController
+
+@enduml
+
+@startuml Persetujuan_Peminjaman
+title Alur Persetujuan Peminjaman (Kabag Umum)
+
+actor Kabag
+participant PersetujuanController
+database DB
+
+Kabag -> PersetujuanController: Lihat detail pengajuan
+activate PersetujuanController
+PersetujuanController -> DB: Query detail peminjaman
+activate DB
+DB --> PersetujuanController: Detail lengkap
+deactivate DB
+PersetujuanController --> Kabag: Tampilkan detail
+
+alt Setujui
+    Kabag -> PersetujuanController: Approve
+    PersetujuanController -> DB: Cek stok
+    activate DB
+    alt Stok cukup
+        DB --> PersetujuanController: Tersedia
+        PersetujuanController -> DB: UPDATE approved\n+ INSERT notifikasi
+        DB --> PersetujuanController: Success
+        deactivate DB
+        PersetujuanController --> Kabag: Berhasil disetujui
+    else Stok tidak cukup
+        DB --> PersetujuanController: Tidak cukup
+        deactivate DB
+        PersetujuanController --> Kabag: Error stok
+    end
+else Tolak
+    Kabag -> PersetujuanController: Reject + alasan
+    PersetujuanController -> DB: UPDATE rejected\n+ INSERT notifikasi
+    activate DB
+    DB --> PersetujuanController: Success
+    deactivate DB
+    PersetujuanController --> Kabag: Berhasil ditolak
+end
+
+deactivate PersetujuanController
+
+@enduml
+
+@startuml Penyerahan_Barang
+title Alur Penyerahan Barang (Operator)
+
+actor Operator
+participant PersetujuanController
+database DB
+
+Operator -> PersetujuanController: Serahkan barang
+activate PersetujuanController
+PersetujuanController -> DB: BEGIN TRANSACTION
+activate DB
+
+alt Status approved
+    PersetujuanController -> DB: 1. Kurangi stok\n2. UPDATE status = dipinjam\n3. INSERT notifikasi
+    PersetujuanController -> DB: COMMIT
+    DB --> PersetujuanController: Success
+    PersetujuanController --> Operator: Berhasil diserahkan
+else Status invalid
+    PersetujuanController -> DB: ROLLBACK
+    DB --> PersetujuanController: Error
+    PersetujuanController --> Operator: Error status
+end
+
+deactivate DB
+deactivate PersetujuanController
+
+@enduml
+
+@startuml Pengembalian_Barang
+title Alur Pengembalian Barang (Operator)
+
+actor Operator
+participant PengembalianController
+database DB
+
+Operator -> PengembalianController: Submit pengembalian\n(jumlah & kondisi)
+activate PengembalianController
+PengembalianController -> DB: BEGIN TRANSACTION
+activate DB
+
+alt Jumlah valid
+    PengembalianController -> DB: 1. UPDATE detail\n2. Tambah stok\n3. UPDATE kondisi\n4. UPDATE status = selesai\n5. INSERT notifikasi
+    PengembalianController -> DB: COMMIT
+    DB --> PengembalianController: Success
+    PengembalianController --> Operator: Pengembalian berhasil
+else Jumlah invalid
+    PengembalianController -> DB: ROLLBACK
+    DB --> PengembalianController: Error
+    PengembalianController --> Operator: Error validasi
+end
+
+deactivate DB
+deactivate PengembalianController
+
+@enduml
+
+@startuml Manajemen_Barang
+title Alur Manajemen Barang (Admin)
+
+actor Admin
+participant BarangController
+database DB
+
+alt Tambah Barang
+    Admin -> BarangController: Submit data barang baru
+    activate BarangController
+    BarangController -> DB: Generate kode\n+ INSERT barang
+    activate DB
+    DB --> BarangController: Success
+    deactivate DB
+    BarangController --> Admin: Berhasil ditambahkan
+    deactivate BarangController
+    
+else Edit Barang
+    Admin -> BarangController: Submit perubahan
+    activate BarangController
+    BarangController -> DB: UPDATE barang
+    activate DB
+    DB --> BarangController: Success
+    deactivate DB
+    BarangController --> Admin: Berhasil diupdate
+    deactivate BarangController
+    
+else Hapus Barang
+    Admin -> BarangController: Hapus barang
+    activate BarangController
+    BarangController -> DB: Cek relasi peminjaman
+    activate DB
+    alt Tidak ada relasi
+        DB --> BarangController: Aman
+        BarangController -> DB: DELETE barang
+        DB --> BarangController: Success
+        deactivate DB
+        BarangController --> Admin: Berhasil dihapus
+    else Ada relasi
+        DB --> BarangController: Ada peminjaman aktif
+        deactivate DB
+        BarangController --> Admin: Error tidak bisa hapus
+    end
+    deactivate BarangController
+end
+
+@enduml
+
+@startuml Notifikasi
+title Alur Notifikasi
+
+actor User
+participant NotifikasiController
+database DB
+
+note over NotifikasiController: Polling AJAX real-time
+
+activate NotifikasiController
+NotifikasiController -> DB: Query notifikasi belum dibaca
+activate DB
+DB --> NotifikasiController: List notifikasi
+deactivate DB
+NotifikasiController --> User: Badge & dropdown
+
+alt Klik notifikasi
+    User -> NotifikasiController: Baca notifikasi
+    NotifikasiController -> DB: UPDATE dibaca = true
+    activate DB
+    DB --> NotifikasiController: OK
+    deactivate DB
+    NotifikasiController --> User: Redirect ke halaman
+else Tandai semua
+    User -> NotifikasiController: Tandai semua dibaca
+    NotifikasiController -> DB: UPDATE semua notifikasi
+    activate DB
+    DB --> NotifikasiController: OK
+    deactivate DB
+    NotifikasiController --> User: Update UI
+end
+
+deactivate NotifikasiController
+
+@enduml
+
+@startuml Generate_Laporan
+title Alur Generate Laporan (Admin/Kabag)
+
+actor User
+participant LaporanController
+database DB
+
+User -> LaporanController: Pilih jenis laporan
+activate LaporanController
+LaporanController -> DB: Query data
+activate DB
+
+alt Peminjaman
+    DB --> LaporanController: Data peminjaman
+else Pengembalian
+    DB --> LaporanController: Data pengembalian
+else Stok
+    DB --> LaporanController: Data stok
+end
+
+deactivate DB
+LaporanController --> User: Tampilkan tabel
+
+alt Export PDF
+    User -> LaporanController: Export PDF
+    LaporanController -> DB: Query data
+    activate DB
+    DB --> LaporanController: Data
+    deactivate DB
+    LaporanController -> LaporanController: Generate PDF
+    LaporanController --> User: Download PDF
+end
+
+deactivate LaporanController
+
+@enduml

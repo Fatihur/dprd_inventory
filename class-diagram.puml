@@ -1,0 +1,326 @@
+/' 
+===========================================
+CLASS DIAGRAM
+Sistem Informasi Peminjaman Inventaris Barang DPRD
+===========================================
+'/
+
+!theme bluegray
+
+@startuml Class_Diagram
+title Class Diagram - Sistem Inventaris DPRD
+
+' Entities
+class User {
+  + id: bigint
+  + name: string
+  + email: string
+  + password: string
+  + role: enum
+  + email_verified_at: timestamp
+  + remember_token: string
+  + created_at: timestamp
+  + updated_at: timestamp
+  --
+  + isAdmin(): bool
+  + isOperator(): bool
+  + isKabagUmum(): bool
+  + peminjaman(): HasMany
+  + persetujuan(): HasMany
+  + logAktivitas(): HasMany
+  + notifikasi(): HasMany
+}
+
+class Barang {
+  + id: bigint
+  + kode_barang: string
+  + nama_barang: string
+  + deskripsi: text
+  + kategori: string
+  + satuan: string
+  + stok: integer
+  + kondisi: enum
+  + lokasi: string
+  + created_at: timestamp
+  + updated_at: timestamp
+  --
+  + getStokTersediaAttribute(): int
+  + detailPeminjaman(): HasMany
+  + generateKode(): string
+}
+
+class Peminjaman {
+  + id: bigint
+  + kode_peminjaman: string
+  + operator_id: bigint
+  + kepala_bagian_id: bigint
+  + nama_peminjam: string
+  + unit_kerja: string
+  + keperluan: text
+  + tanggal_pinjam: date
+  + tanggal_kembali_rencana: date
+  + tanggal_kembali_aktual: date
+  + status: enum
+  + alasan_penolakan: text
+  + catatan_pengembalian: text
+  + bukti_peminjaman: string
+  + bukti_pengembalian: string
+  + created_at: timestamp
+  + updated_at: timestamp
+  --
+  + operator(): BelongsTo
+  + kepalaBagian(): BelongsTo
+  + detailPeminjaman(): HasMany
+  + generateKode(): string
+  + isPending(): bool
+  + isApproved(): bool
+  + isDipinjam(): bool
+  + getBuktiPeminjamanUrl(): string
+  + getBuktiPengembalianUrl(): string
+}
+
+class DetailPeminjaman {
+  + id: bigint
+  + peminjaman_id: bigint
+  + barang_id: bigint
+  + jumlah: integer
+  + jumlah_kembali: integer
+  + kondisi_kembali: enum
+  + created_at: timestamp
+  + updated_at: timestamp
+  --
+  + peminjaman(): BelongsTo
+  + barang(): BelongsTo
+}
+
+class LogAktivitas {
+  + id: bigint
+  + user_id: bigint
+  + aktivitas: string
+  + tabel: string
+  + record_id: bigint
+  + data_lama: json
+  + data_baru: json
+  + ip_address: string
+  + user_agent: string
+  + created_at: timestamp
+  + updated_at: timestamp
+  --
+  + user(): BelongsTo
+  + catat(): void
+}
+
+class Notifikasi {
+  + id: bigint
+  + user_id: bigint
+  + judul: string
+  + pesan: text
+  + tipe: enum
+  + link: string
+  + dibaca: boolean
+  + created_at: timestamp
+  + updated_at: timestamp
+  --
+  + user(): BelongsTo
+  + tandaiDibaca(): void
+  + kirim(): void
+  + kirimKeRole(): void
+}
+
+' Relationships
+User "1" -- "0..*" Peminjaman : operator >
+User "1" -- "0..*" Peminjaman : kepala_bagian >
+User "1" -- "0..*" LogAktivitas : creates >
+User "1" -- "0..*" Notifikasi : receives >
+
+Peminjaman "1" -- "1..*" DetailPeminjaman : contains >
+Barang "1" -- "0..*" DetailPeminjaman : borrowed in >
+
+note right of User
+  Role: admin, operator, kabag_umum
+  - Admin: Kelola user & barang
+  - Operator: Buat peminjaman
+  - Kabag Umum: Approve peminjaman
+end note
+
+note right of Peminjaman
+  Status: pending, approved, 
+  rejected, dipinjam, selesai
+  
+  Alur:
+  pending → approved → dipinjam → selesai
+  pending → rejected
+end note
+
+note right of Barang
+  Kondisi: baik, rusak_ringan, 
+  rusak_berat
+  
+  stok_tersedia = stok - 
+  (jumlah dipinjam)
+end note
+
+@enduml
+
+@startuml Class_Diagram_Controllers
+title Class Diagram - Controllers
+
+abstract class Controller {
+  # middleware(): void
+}
+
+class AuthController {
+  + showLogin(): View
+  + login(Request): RedirectResponse
+  + logout(Request): RedirectResponse
+}
+
+class DashboardController {
+  + index(): View
+}
+
+class UserController {
+  + index(): View
+  + create(): View
+  + store(Request): RedirectResponse
+  + edit(User): View
+  + update(Request, User): RedirectResponse
+  + destroy(User): RedirectResponse
+}
+
+class BarangController {
+  + index(): View
+  + create(): View
+  + store(Request): RedirectResponse
+  + show(Barang): View
+  + edit(Barang): View
+  + update(Request, Barang): RedirectResponse
+  + destroy(Barang): RedirectResponse
+}
+
+class PeminjamanController {
+  + index(): View
+  + create(): View
+  + store(Request): RedirectResponse
+  + show(Peminjaman): View
+  + getBarangInfo(Barang): JsonResponse
+}
+
+class PersetujuanController {
+  + index(): View
+  + show(Peminjaman): View
+  + approve(Request, Peminjaman): RedirectResponse
+  + reject(Request, Peminjaman): RedirectResponse
+  + serahkan(Request, Peminjaman): RedirectResponse
+}
+
+class PengembalianController {
+  + index(): View
+  + create(Peminjaman): View
+  + store(Request, Peminjaman): RedirectResponse
+}
+
+class LaporanController {
+  + peminjaman(): View
+  + peminjamanPdf(): Response
+  + pengembalian(): View
+  + pengembalianPdf(): Response
+  + stok(): View
+  + stokPdf(): Response
+}
+
+class NotifikasiController {
+  + index(): View
+  + getUnread(): JsonResponse
+  + tandaiDibaca(Notifikasi): JsonResponse
+  + tandaiSemuaDibaca(): JsonResponse
+}
+
+Controller <|-- AuthController
+Controller <|-- DashboardController
+Controller <|-- UserController
+Controller <|-- BarangController
+Controller <|-- PeminjamanController
+Controller <|-- PersetujuanController
+Controller <|-- PengembalianController
+Controller <|-- LaporanController
+Controller <|-- NotifikasiController
+
+@enduml
+
+@startuml Class_Diagram_Simple
+title Class Diagram - Simplified
+
+class User {
+  + id
+  + name
+  + email
+  + role
+  --
+  + peminjaman()
+  + notifikasi()
+}
+
+class Barang {
+  + id
+  + kode_barang
+  + nama_barang
+  + stok
+  + kondisi
+  --
+  + stok_tersedia
+}
+
+class Peminjaman {
+  + id
+  + kode_peminjaman
+  + nama_peminjam
+  + unit_kerja
+  + tanggal_pinjam
+  + tanggal_kembali
+  + status
+  + bukti_peminjaman
+  + bukti_pengembalian
+  --
+  + operator()
+  + kepalaBagian()
+  + detailPeminjaman()
+}
+
+class DetailPeminjaman {
+  + id
+  + jumlah
+  + jumlah_kembali
+  + kondisi_kembali
+  --
+  + peminjaman()
+  + barang()
+}
+
+class Notifikasi {
+  + id
+  + judul
+  + pesan
+  + dibaca
+  --
+  + user()
+}
+
+class LogAktivitas {
+  + id
+  + aktivitas
+  + tabel
+  + data_lama
+  + data_baru
+  --
+  + user()
+}
+
+User "1" -- "*" Peminjaman : creates
+User "1" -- "*" Notifikasi : receives
+User "1" -- "*" LogAktivitas : logs
+
+Peminjaman "1" -- "*" DetailPeminjaman
+Barang "1" -- "*" DetailPeminjaman
+
+@enduml

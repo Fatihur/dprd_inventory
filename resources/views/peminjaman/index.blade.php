@@ -49,6 +49,11 @@
                                     </button>
                                 </form>
                                 @endif
+                                @if(in_array($p->status, ['approved', 'dipinjam', 'selesai']))
+                                <a href="{{ route('bukti.peminjaman', $p) }}" class="btn btn-outline-primary" title="Cetak Bukti" target="_blank">
+                                    <i class="bi bi-printer"></i>
+                                </a>
+                                @endif
                             </div>
                         </td>
                     </tr>
