@@ -94,6 +94,15 @@
             </a>
             @endif
             
+            @if($peminjaman->status === 'dipinjam' && $peminjaman->email_peminjam)
+            <form action="{{ route('peminjaman.kirim-notifikasi', $peminjaman) }}" method="POST" class="d-inline" onsubmit="return confirm('Kirim email notifikasi ke {{ $peminjaman->email_peminjam }}?')">
+                @csrf
+                <button type="submit" class="btn btn-warning">
+                    <i class="bi bi-envelope me-1"></i>Kirim Email Notifikasi
+                </button>
+            </form>
+            @endif
+            
             <a href="{{ route('peminjaman.index') }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left me-1"></i>Kembali
             </a>

@@ -48,9 +48,19 @@
                             @endif
                         </td>
                         <td>
-                            <a href="{{ route('pengembalian.create', $p) }}" class="btn btn-success btn-sm">
-                                <i class="bi bi-arrow-return-left me-1"></i>Kembalikan
-                            </a>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ route('pengembalian.create', $p) }}" class="btn btn-success" title="Kembalikan">
+                                    <i class="bi bi-arrow-return-left"></i>
+                                </a>
+                                @if($p->email_peminjam && $p->tanggal_kembali_rencana->isPast())
+                                <form action="{{ route('peminjaman.kirim-notifikasi', $p) }}" method="POST" class="d-inline" onsubmit="return confirm('Kirim email notifikasi ke {{ $p->email_peminjam }}?')">
+                                    @csrf
+                                    <button type="submit" class="btn btn-warning" title="Kirim Email Notifikasi">
+                                        <i class="bi bi-envelope-exclamation"></i>
+                                    </button>
+                                </form>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @endforeach

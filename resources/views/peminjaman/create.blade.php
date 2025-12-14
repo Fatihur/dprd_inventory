@@ -52,6 +52,27 @@
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="email_peminjam" class="form-label">Email Peminjam <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control @error('email_peminjam') is-invalid @enderror" id="email_peminjam" name="email_peminjam" value="{{ old('email_peminjam') }}" required placeholder="contoh@email.com">
+                        @error('email_peminjam')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="text-muted">Untuk notifikasi jatuh tempo pengembalian</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="no_hp_peminjam" class="form-label">No. HP Peminjam</label>
+                        <input type="text" class="form-control @error('no_hp_peminjam') is-invalid @enderror" id="no_hp_peminjam" name="no_hp_peminjam" value="{{ old('no_hp_peminjam') }}" placeholder="08xxxxxxxxxx">
+                        @error('no_hp_peminjam')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            </div>
             <div class="mb-3">
                 <label for="keperluan" class="form-label">Keperluan</label>
                 <textarea class="form-control @error('keperluan') is-invalid @enderror" id="keperluan" name="keperluan" rows="2">{{ old('keperluan') }}</textarea>

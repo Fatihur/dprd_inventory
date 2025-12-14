@@ -74,4 +74,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/bukti/peminjaman/{peminjaman}/pdf', [App\Http\Controllers\BuktiController::class, 'cetakBuktiPeminjamanPdf'])->name('bukti.peminjaman.pdf');
     Route::get('/bukti/pengembalian/{peminjaman}', [App\Http\Controllers\BuktiController::class, 'cetakBuktiPengembalian'])->name('bukti.pengembalian');
     Route::get('/bukti/pengembalian/{peminjaman}/pdf', [App\Http\Controllers\BuktiController::class, 'cetakBuktiPengembalianPdf'])->name('bukti.pengembalian.pdf');
+    
+    // Kirim email notifikasi jatuh tempo manual
+    Route::post('/peminjaman/{peminjaman}/kirim-notifikasi', [PeminjamanController::class, 'kirimNotifikasiJatuhTempo'])->name('peminjaman.kirim-notifikasi');
 });

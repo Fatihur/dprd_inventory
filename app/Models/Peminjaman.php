@@ -16,6 +16,8 @@ class Peminjaman extends Model
         'operator_id',
         'kepala_bagian_id',
         'nama_peminjam',
+        'email_peminjam',
+        'no_hp_peminjam',
         'unit_kerja',
         'keperluan',
         'tanggal_pinjam',
@@ -26,6 +28,7 @@ class Peminjaman extends Model
         'catatan_pengembalian',
         'bukti_peminjaman',
         'bukti_pengembalian',
+        'notifikasi_jatuh_tempo_dikirim',
     ];
 
     protected $casts = [
