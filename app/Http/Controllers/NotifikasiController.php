@@ -51,7 +51,13 @@ class NotifikasiController extends Controller
         $notifikasi->tandaiDibaca();
 
         if ($notifikasi->link) {
-            return redirect($notifikasi->link);
+            // Cek apakah link bisa diakses oleh user saat ini
+            try {
+                return redirect($notifikasi->link);
+            } catch (\Exception $e) {
+                return redirect()->route('notifikasi.index')
+                    ->with('error', 'Anda tidak memiliki akses ke halaman tujuan notifikasi.');
+            }
         }
 
         return back();

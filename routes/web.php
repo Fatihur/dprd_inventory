@@ -36,12 +36,14 @@ Route::middleware('auth')->group(function () {
         Route::resource('barang', BarangController::class);
     });
     
+    // Detail peminjaman - accessible by all authenticated users
+    Route::get('/peminjaman/{peminjaman}', [PeminjamanController::class, 'show'])->name('peminjaman.show');
+    
     // Operator only routes (peminjaman & pengembalian)
     Route::middleware('role:operator')->group(function () {
         Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
         Route::get('/peminjaman/create', [PeminjamanController::class, 'create'])->name('peminjaman.create');
         Route::post('/peminjaman', [PeminjamanController::class, 'store'])->name('peminjaman.store');
-        Route::get('/peminjaman/{peminjaman}', [PeminjamanController::class, 'show'])->name('peminjaman.show');
         Route::get('/api/barang/{barang}', [PeminjamanController::class, 'getBarangInfo'])->name('api.barang.info');
         
         Route::get('/pengembalian', [PengembalianController::class, 'index'])->name('pengembalian.index');
