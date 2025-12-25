@@ -198,7 +198,7 @@
                 </button>
             </form>
 
-            <div class="divider">
+            {{-- <div class="divider">
                 <span>Akun Demo</span>
             </div>
             
@@ -206,7 +206,7 @@
                 <span class="demo-chip" data-email="admin@dprd.go.id" data-password="password">Admin</span>
                 <span class="demo-chip" data-email="operator@dprd.go.id" data-password="password">Operator</span>
                 <span class="demo-chip" data-email="kabag@dprd.go.id" data-password="password">Kabag</span>
-            </div>
+            </div> --}}
         </div>
     </div>
 
