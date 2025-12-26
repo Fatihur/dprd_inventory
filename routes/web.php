@@ -36,9 +36,6 @@ Route::middleware('auth')->group(function () {
         Route::resource('barang', BarangController::class);
     });
     
-    // Detail peminjaman - accessible by all authenticated users
-    Route::get('/peminjaman/{peminjaman}', [PeminjamanController::class, 'show'])->name('peminjaman.show');
-    
     // Operator only routes (peminjaman & pengembalian)
     Route::middleware('role:operator')->group(function () {
         Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
@@ -52,6 +49,9 @@ Route::middleware('auth')->group(function () {
         
         Route::post('/peminjaman/{peminjaman}/serahkan', [PersetujuanController::class, 'serahkan'])->name('peminjaman.serahkan');
     });
+    
+    // Detail peminjaman - accessible by all authenticated users (harus setelah /peminjaman/create)
+    Route::get('/peminjaman/{peminjaman}', [PeminjamanController::class, 'show'])->name('peminjaman.show');
     
     // Kabag Umum routes
     Route::middleware('role:kabag_umum')->group(function () {

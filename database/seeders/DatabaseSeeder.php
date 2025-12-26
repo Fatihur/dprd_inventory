@@ -53,5 +53,8 @@ class DatabaseSeeder extends Seeder
             $item['kode_barang'] = Barang::generateKode();
             Barang::create($item);
         }
+
+        // Panggil seeder peminjaman jatuh tempo
+        $this->call(PeminjamanJatuhTempoSeeder::class);
     }
 }

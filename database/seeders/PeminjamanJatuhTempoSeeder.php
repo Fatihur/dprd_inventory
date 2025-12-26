@@ -22,10 +22,8 @@ class PeminjamanJatuhTempoSeeder extends Seeder
             return;
         }
 
-        $barang2 = Barang::skip(1)->first() ?? $barang;
-
-        // Peminjaman 1 - Jatuh tempo kemarin
-        $peminjaman1 = Peminjaman::create([
+        // Peminjaman - Jatuh tempo kemarin
+        $peminjaman = Peminjaman::create([
             'kode_peminjaman' => 'PJM-' . date('Ymd') . '-TEST1',
             'operator_id' => $operator->id,
             'kepala_bagian_id' => $kabag->id,
@@ -40,42 +38,15 @@ class PeminjamanJatuhTempoSeeder extends Seeder
         ]);
 
         DetailPeminjaman::create([
-            'peminjaman_id' => $peminjaman1->id,
+            'peminjaman_id' => $peminjaman->id,
             'barang_id' => $barang->id,
             'jumlah' => 1,
         ]);
 
-        // Peminjaman 2 - Jatuh tempo 3 hari lalu
-        $peminjaman2 = Peminjaman::create([
-            'kode_peminjaman' => 'PJM-' . date('Ymd') . '-TEST2',
-            'operator_id' => $operator->id,
-            'kepala_bagian_id' => $kabag->id,
-            'nama_peminjam' => 'Fatihur Rahman',
-            'email_peminjam' => 'fatihur17@gmail.com',
-            'no_hp_peminjam' => '089876543210',
-            'unit_kerja' => 'Bagian Keuangan',
-            'keperluan' => 'Rapat koordinasi',
-            'tanggal_pinjam' => now()->subDays(10)->toDateString(),
-            'tanggal_kembali_rencana' => now()->subDays(3)->toDateString(),
-            'status' => 'dipinjam',
-        ]);
-
-        DetailPeminjaman::create([
-            'peminjaman_id' => $peminjaman2->id,
-            'barang_id' => $barang2->id,
-            'jumlah' => 2,
-        ]);
-
         $this->command->info("✓ Peminjaman jatuh tempo berhasil dibuat:");
-        $this->command->info("");
-        $this->command->info("  1. Kode: {$peminjaman1->kode_peminjaman}");
-        $this->command->info("     Peminjam: {$peminjaman1->nama_peminjam}");
-        $this->command->info("     Email: {$peminjaman1->email_peminjam}");
-        $this->command->info("     Jatuh Tempo: {$peminjaman1->tanggal_kembali_rencana->format('d/m/Y')}");
-        $this->command->info("");
-        $this->command->info("  2. Kode: {$peminjaman2->kode_peminjaman}");
-        $this->command->info("     Peminjam: {$peminjaman2->nama_peminjam}");
-        $this->command->info("     Email: {$peminjaman2->email_peminjam}");
-        $this->command->info("     Jatuh Tempo: {$peminjaman2->tanggal_kembali_rencana->format('d/m/Y')}");
+        $this->command->info("  Kode: {$peminjaman->kode_peminjaman}");
+        $this->command->info("  Peminjam: {$peminjaman->nama_peminjam}");
+        $this->command->info("  Email: {$peminjaman->email_peminjam}");
+        $this->command->info("  Jatuh Tempo: {$peminjaman->tanggal_kembali_rencana->format('d/m/Y')}");
     }
 }
